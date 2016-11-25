@@ -128,7 +128,7 @@ class MyChartView(QChartView):
                 point = serie.at(point_ind - 1 if point_ind else 0)
                 text.append("%f x %f" % (point.x(), point.y()))
             painter.drawText(70, 27, ', '.join(text))
-            # painter.setClipRect(rect)
+            painter.setClipRect(rect)
             # painter.setPen(self.guidePen)
             painter.drawLine(self.coords.x(), rect.top(), self.coords.x(), rect.bottom())
 

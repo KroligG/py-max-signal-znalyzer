@@ -1,4 +1,3 @@
-import json
 import math
 import os
 import sys
@@ -7,6 +6,7 @@ from PyQt5 import QtCore
 from PyQt5.QtChart import QLineSeries
 from PyQt5.QtCore import QLocale
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QAction, QVBoxLayout, QScrollBar, QComboBox, QLabel, QMessageBox, QCheckBox
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
@@ -64,7 +64,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(cw)
 
         # self.setGeometry(300, 300, 250, 150)
-        self.setMinimumSize(1200, 300)
+        self.resize(1200, 300)
         self.setWindowTitle('Max Signal Analyzer')
         self.show()
 
@@ -97,20 +97,22 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage('Data loaded.')
 
     def saveDataFile(self):
-        fname = QFileDialog.getSaveFileName(self, 'Save file', filter='*.json')
+        fname = QFileDialog.getSaveFileName(self, 'Save file', filter='*.png')
 
         if fname[0]:
-            with open(fname[0], 'w') as f:
-                json.dump(self.centralWidget().table.get_table_data(), f)
-            self.statusBar().showMessage('File was saved successfully')
+            central_widget = self.centralWidget()
+            pixmap = QPixmap(central_widget.size())
+            central_widget.render(pixmap)
+            pixmap.save(fname[0])
+            self.statusBar().showMessage('Image was saved successfully')
 
-    # def closeEvent(self, event):
-    #     reply = QMessageBox.question(self, 'Confirm', "Are you sure to quit?",
-    #                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
-    #     if reply == QMessageBox.Yes:
-    #         event.accept()
-    #     else:
-    #         event.ignore()
+    def closeEvent(self, event):
+        reply = QMessageBox.question(self, 'Confirm', "Are you sure to quit?",
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:
@@ -131,11 +133,6 @@ class CentralWidget(QWidget):
         self.setLayout(grid)
 
         self.fft = False
-
-        file_name = "Prim_Sign/10Hz.bin"
-        self.windowWidget.files = [TembrFile(os.path.split(file_name)[1], open(file_name, 'rb').read())]
-        self.windowWidget.files[0].fft(0)
-        self.init_charts()
 
         self.windowWidget.sample_size_select.activated.connect(self.on_sample_size_changed)
 
@@ -160,6 +157,8 @@ class CentralWidget(QWidget):
         for tembrFile in self.windowWidget.files:
             self.add_chart(tembrFile)
 
+        self.resize(1200, 300 * len(self.charts))
+
         self.layout().addWidget(self.chart_scroll)
 
     def on_slider_changed(self, e):
@@ -175,7 +174,7 @@ class CentralWidget(QWidget):
     def add_chart(self, tembrFile: TembrFile):
         series = QLineSeries()
         series.setName(tembrFile.name)
-        series.setUseOpenGL(True)
+        # series.setUseOpenGL(True)
 
         if self.fft:
             series.append(tembrFile.fft(self.current_sample))
