@@ -1,0 +1,3 @@
+PyQt5==5.7
+PyQtChart==5.7
+numpy==1.11.2
