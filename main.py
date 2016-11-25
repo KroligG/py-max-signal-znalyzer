@@ -4,10 +4,10 @@ import sys
 
 from PyQt5 import QtCore
 from PyQt5.QtChart import QLineSeries
-from PyQt5.QtCore import QLocale
+from PyQt5.QtCore import QLocale, QSize
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QAction, QVBoxLayout, QScrollBar, QComboBox, QLabel, QMessageBox, QCheckBox
+from PyQt5.QtWidgets import QAction, QVBoxLayout, QScrollBar, QComboBox, QLabel, QMessageBox, QCheckBox, QScrollArea
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QWidget, QApplication
@@ -64,6 +64,8 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(cw)
 
         # self.setGeometry(300, 300, 250, 150)
+        geometry = QApplication.desktop().screenGeometry()
+        self.setMaximumHeight(geometry.height() - 100)
         self.resize(1200, 300)
         self.setWindowTitle('Max Signal Analyzer')
         self.show()
@@ -154,10 +156,19 @@ class CentralWidget(QWidget):
         self.chart_scroll = QScrollBar(Qt.Horizontal)
         self.chart_scroll.valueChanged.connect(self.on_slider_changed)
 
+        self.chart_area_scroll = QScrollArea(self)
+        self.chart_area_scroll.setWidgetResizable(True)
+        self.layout().addWidget(self.chart_area_scroll)
+
+        self.chart_area_scroll_widget = QWidget()
+        self.chart_area_scroll.setWidget(self.chart_area_scroll_widget)
+
+        self.chart_area_scroll_widget.setLayout(QVBoxLayout())
+
         for tembrFile in self.windowWidget.files:
             self.add_chart(tembrFile)
 
-        self.resize(1200, 300 * len(self.charts))
+        self.windowWidget.setGeometry(200, 40, 1200, 300 * len(self.charts))
 
         self.layout().addWidget(self.chart_scroll)
 
@@ -180,11 +191,11 @@ class CentralWidget(QWidget):
             series.append(tembrFile.fft(self.current_sample))
         else:
             series.append(tembrFile.get_qpoints_sample(self.current_sample))
-        self.charts.append(MyQtChart.MyChartView(series, "Chart", "Time", "Value", minimumSize=None, y_range=(tembrFile.min, tembrFile.max),
+        self.charts.append(MyQtChart.MyChartView(series, "Chart", "Time", "Value", minimumSize=QSize(1200, 300), y_range=(tembrFile.min, tembrFile.max),
                                                  allowZoom=True, allowPan=True, niceNumbers=True, showPoints=False))
         self.chart_descriptions.append(QLabel())
-        self.layout().addWidget(self.chart_descriptions[-1])
-        self.layout().addWidget(self.charts[-1])
+        self.chart_area_scroll_widget.layout().addWidget(self.chart_descriptions[-1])
+        self.chart_area_scroll_widget.layout().addWidget(self.charts[-1])
 
         self.chart_scroll.setMaximum(tembrFile.sample_count - 1)
         self.windowWidget.sample_size_select.setCurrentIndex(math.log2(tembrFile.current_sample_size) - 8)
