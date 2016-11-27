@@ -168,7 +168,7 @@ class CentralWidget(QWidget):
         for tembrFile in self.windowWidget.files:
             self.add_chart(tembrFile)
 
-        self.windowWidget.setGeometry(200, 40, 1200, 300 * len(self.charts))
+        self.windowWidget.setGeometry(200, 40, 1200, 500 * len(self.charts))
 
         self.layout().addWidget(self.chart_scroll)
 
@@ -189,9 +189,11 @@ class CentralWidget(QWidget):
 
         if self.fft:
             series.append(tembrFile.fft(self.current_sample))
+            y_range=None
         else:
             series.append(tembrFile.get_qpoints_sample(self.current_sample))
-        self.charts.append(MyQtChart.MyChartView(series, "Chart", "Time", "Value", minimumSize=QSize(1200, 300), y_range=(tembrFile.min, tembrFile.max),
+            y_range=(tembrFile.min, tembrFile.max)
+        self.charts.append(MyQtChart.MyChartView(series, "Chart", "Time", "Value", minimumSize=QSize(1200, 300), y_range=y_range,
                                                  allowZoom=True, allowPan=True, niceNumbers=True, showPoints=False))
         self.chart_descriptions.append(QLabel())
         self.chart_area_scroll_widget.layout().addWidget(self.chart_descriptions[-1])

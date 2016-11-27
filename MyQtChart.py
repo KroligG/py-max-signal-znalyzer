@@ -27,6 +27,8 @@ class MyChartView(QChartView):
         if y_range:
             self.y_range = y_range
             self.y_range_fixed = True
+        else:
+            self.y_range_fixed = False
 
         self.setRubberBand(QChartView.HorizontalRubberBand)
 
@@ -92,7 +94,7 @@ class MyChartView(QChartView):
 
         if not self.y_range_fixed:
             self.y_range = min(x_y_points[1]), max(x_y_points[1])
-            self.chart().axisY().setRange(*self.y_range)
+        self.chart().axisY().setRange(*self.y_range)
 
     def set_series(self, series: QLineSeries):
         self.chart().removeAllSeries()
