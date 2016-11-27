@@ -63,7 +63,7 @@ class TembrFile:
 
     def amplitude(self, sample_num):
         p = self.get_points_sample(sample_num)
-        return max(p) - min(p)
+        return (max(p) - min(p)) / 2
 
     def fft(self, sample_num):
         y = self.get_points_sample(sample_num)
